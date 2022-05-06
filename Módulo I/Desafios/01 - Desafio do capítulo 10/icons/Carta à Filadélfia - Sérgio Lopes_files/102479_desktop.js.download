@@ -1,0 +1,5 @@
+var script = document.createElement('script');
+script.setAttribute('id',   'vidoomyScript');
+script.setAttribute('src',  'https://ads.vidoomy.com/vagalume_4283.js');
+script.setAttribute('type', 'text/javascript');
+document.querySelector('head').appendChild(script);

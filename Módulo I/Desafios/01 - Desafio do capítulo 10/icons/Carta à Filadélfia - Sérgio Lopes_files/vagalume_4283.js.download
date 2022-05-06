@@ -1,0 +1,179 @@
+if(window.location.href.indexOf('?interactive') != -1){
+
+	var iframe = document.createElement('iframe');
+	iframe.src = "https://vidoomy.com/showcase/interactive/mcdonalds-colombia/desktop.html";
+	iframe.style.width = "100%";
+	iframe.style.height="400px"
+	iframe.frameBorder = 0;
+	iframe.style.overflow = "hidden";
+	top.document.querySelector(".col1-2-1 div").appendChild(iframe);
+}else{
+if(window!=window.top){var mydoc=parent.document;}else{var mydoc=document;}
+		mydoc.querySelectorAll('div[id^=\"lkqdad\"]').forEach(function (i){ 
+			if (typeof(i) != "undefined" && i != null) {
+				closeElement = i.parentElement.parentElement.querySelector("span");
+				if (typeof(closeElement) != "undefined" && closeElement != null) {
+					var el = i.parentElement.parentElement;
+			    	el.parentNode.removeChild( el );
+		    	}
+		    }
+		});
+		mydoc.querySelectorAll('iframe[id^=\"15786\"]').forEach(function (i){ 
+			if (typeof(i) != "undefined" && i != null) {
+				var el = i.parentElement;
+		    	el.removeChild( i );
+	    	}
+		});
+var passbackcall = true; var passbackexec = false; var valt1 = 23; var valt2 = 22;
+
+function preventPlayer(){ 
+passbackexec = true; 
+[].forEach.call( top.document.querySelectorAll('iframe[id^="vdmy"]'), function (el) { el.remove(); } ); 
+[].forEach.call( top.document.querySelectorAll('a[style*="21474836"]'), function (el) { el.remove(); } );
+loadExtJs();
+}
+
+function cancellPassback(){passbackcall = false;}
+function loadExtJs(){
+window._czVSAllowed = true;
+console.log('Passback vidoomy');
+}
+
+setTimeout(function(){ if(passbackcall === true){preventPlayer();}}, parseInt((valt1 + valt2) * 1000));
+// slider desktop
+ 
+(function()
+{
+  var lkqdSettings = {
+    pid: 430,
+    sid: 1010567,
+    playerContainerId: '',
+    playerId: '',
+    playerWidth: 400,
+    playerHeight: 225,
+    execution: 'outstream',
+    placement: 'slider',
+    playInitiation: 'auto',
+    slidePosition: 'right',
+    volume: 0,
+    trackImp: '',
+    trackClick: '',
+    custom1: 'test',
+    custom2: '',
+    custom3: '1.0,1!vidoomy.com,54383,1,',
+    custom4: '',
+    custom5: '',
+    custom6: '54383',
+    custom10: '', custom11: 'true',custom12: '', custom13: 'true',custom20: '', custom21: 'true',custom22: '', custom23: 'true', pubMacros: '',
+    overrideSize: false,
+    dfp: true,
+    close: true,
+    gdpr: '',
+    gdprcs: '',
+bottomPadding: 70,
+    lkqdId: 'vdmy_' + new Date().getTime().toString() + Math.round(Math.random()*1000000000).toString(),
+    supplyContentVideo: {
+      url: '', clickurl: '', play: 'post'
+    }
+  };
+ 
+  var lkqdVPAID;
+  var creativeData = '';
+  var environmentVars = { slot: document.getElementById(lkqdSettings.playerContainerId), videoSlot: document.getElementById(lkqdSettings.playerId), videoSlotCanAutoPlay: true, lkqdSettings: lkqdSettings };
+ 
+  function onVPAIDLoad()
+  {
+    lkqdVPAID.subscribe(function() { if(passbackexec === false) { lkqdVPAID.startAd(); } }, 'AdLoaded'); lkqdVPAID.subscribe(function() { cancellPassback(); }, 'AdVideoStart');
+    lkqdVPAID.subscribe(function() { lkqdVPAID.stopAd(); }, 'AdVideoComplete');
+  }
+ 
+  var vpaidFrame = document.createElement('iframe');
+  vpaidFrame.id = lkqdSettings.lkqdId;
+  vpaidFrame.name = lkqdSettings.lkqdId;
+  vpaidFrame.style.display = 'none';
+  var vpaidFrameLoaded = function() {
+    vpaidFrame.contentWindow.addEventListener('lkqdFormatsLoad', function() {
+      lkqdVPAID = vpaidFrame.contentWindow.getVPAIDAd();
+      onVPAIDLoad();
+      lkqdVPAID.handshakeVersion('2.0');
+      lkqdVPAID.initAd(lkqdSettings.playerWidth, lkqdSettings.playerHeight, 'normal', 600, creativeData, environmentVars);
+    });
+    vpaidLoader = vpaidFrame.contentWindow.document.createElement('script');
+    vpaidLoader.setAttribute('async','async');
+    vpaidLoader.src = 'https://ad.lkqd.net/vpaid/formats.js';
+    vpaidFrame.contentWindow.document.body.appendChild(vpaidLoader);
+  };
+  vpaidFrame.onload = vpaidFrameLoaded;
+  vpaidFrame.onerror = vpaidFrameLoaded;
+  document.documentElement.appendChild(vpaidFrame);
+})();
+
+// slider mw
+ 
+(function()
+{
+  var lkqdSettings = {
+    pid: 430,
+    sid: 1010572,
+    playerContainerId: '',
+    playerId: '',
+    playerWidth: 400,
+    playerHeight: 225,
+    execution: 'outstream',
+    placement: 'slider',
+    playInitiation: 'auto',
+    slidePosition: 'right',
+    volume: 0,
+    trackImp: '',
+    trackClick: '',
+    custom1: '',
+    custom2: '',
+    custom3: '1.0,1!vidoomy.com,54383,1,',
+    custom4: '',
+    custom5: '',
+    custom6: '54383',
+    custom10: '', custom11: 'true',custom12: '', custom13: 'true',custom20: '', custom21: 'true',custom22: '', custom23: 'true', pubMacros: '',
+    overrideSize: false,
+    dfp: true,
+    close: true,
+    gdpr: '',
+    gdprcs: '',
+bottomPadding: 60,
+    lkqdId: 'vdmy_' + new Date().getTime().toString() + Math.round(Math.random()*1000000000).toString(),
+    supplyContentVideo: {
+      url: '', clickurl: '', play: 'post'
+    }
+  };
+ 
+  var lkqdVPAID;
+  var creativeData = '';
+  var environmentVars = { slot: document.getElementById(lkqdSettings.playerContainerId), videoSlot: document.getElementById(lkqdSettings.playerId), videoSlotCanAutoPlay: true, lkqdSettings: lkqdSettings };
+ 
+  function onVPAIDLoad()
+  {
+    lkqdVPAID.subscribe(function() { if(passbackexec === false) { lkqdVPAID.startAd(); } }, 'AdLoaded'); lkqdVPAID.subscribe(function() { cancellPassback(); }, 'AdVideoStart');
+  }
+ 
+  var vpaidFrame = document.createElement('iframe');
+  vpaidFrame.id = lkqdSettings.lkqdId;
+  vpaidFrame.name = lkqdSettings.lkqdId;
+  vpaidFrame.style.display = 'none';
+  var vpaidFrameLoaded = function() {
+    vpaidFrame.contentWindow.addEventListener('lkqdFormatsLoad', function() {
+      lkqdVPAID = vpaidFrame.contentWindow.getVPAIDAd();
+      onVPAIDLoad();
+      lkqdVPAID.handshakeVersion('2.0');
+      lkqdVPAID.initAd(lkqdSettings.playerWidth, lkqdSettings.playerHeight, 'normal', 600, creativeData, environmentVars);
+    });
+    vpaidLoader = vpaidFrame.contentWindow.document.createElement('script');
+    vpaidLoader.setAttribute('async','async');
+    vpaidLoader.src = 'https://ad.lkqd.net/vpaid/formats.js';
+    vpaidFrame.contentWindow.document.body.appendChild(vpaidLoader);
+  };
+  vpaidFrame.onload = vpaidFrameLoaded;
+  vpaidFrame.onerror = vpaidFrameLoaded;
+  document.documentElement.appendChild(vpaidFrame);
+})();
+
+
+}

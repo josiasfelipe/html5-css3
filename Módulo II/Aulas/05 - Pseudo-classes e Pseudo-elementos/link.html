@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pseudo-classes/elementos</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        a {
+            text-decoration: none;
+            font: bold;
+            color: blue;
+        }
+
+        a:active { /* Pseudo-classe que é ativada enquando o mouse está pressionado */
+            color: yellow;
+        }
+
+        a:hover::after { /* Pseudo-elemento que adiciona coisas após o elemento */
+            content: ' <<';
+        }
+
+        .especial {
+            background-color: lightgrey;
+        }
+
+        .especial:hover::after {
+            content: ' [link]';
+        }
+    </style>
+</head>
+<body>
+    <h1>Personalizando Links</h1>
+    <ul>
+        <li><a href="https://youtube.com" target="_blank">You Tube</a></li>
+        <li><a href="https://google.com" target="_blank" class="especial">Google</a></li>
+        <li><a href="https://facebook.com" target="_blank">Facebook</a></li>
+    </ul>
+</body>
+</html>

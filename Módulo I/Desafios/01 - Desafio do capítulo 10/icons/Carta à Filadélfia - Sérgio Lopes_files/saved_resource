@@ -1,0 +1,7 @@
+	let raSyncIframe = document.createElement('iframe');
+	raSyncIframe.width=0;
+	raSyncIframe.height=0;
+	raSyncIframe.frameBorder=0;
+	raSyncIframe.scrolling='no';
+	raSyncIframe.src='https://sync.richaudience.com/b3adde1f4bbb31c3485562d6e3ddceb4/?rnd=15458720'; 
+	document.body.appendChild(raSyncIframe);

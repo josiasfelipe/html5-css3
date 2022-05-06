@@ -1,0 +1,33 @@
+*{ /* Configuração global das CSS */
+    height: 100%;
+} 
+
+body {
+    background-color: gray;
+    /*color: white;*/
+    text-align: center;
+}
+
+section#sec01 {
+    background-image: linear-gradient(to right, white, blue); /* to left - to top - to bottom - circle */
+    width: 500px;
+    height: 200px;
+    border-radius: 10px;
+    margin: auto;
+}
+
+section#sec02 {
+    background-image: linear-gradient(45deg, blue, white); /* De -180deg Para 180deg */
+    width: 500px;
+    height: 200px;
+    border-radius: 10px;
+    margin: auto;
+}
+
+section#sec03 {
+    background-image: linear-gradient(to right, #ff0000, #e42121 40%, #e96c6c); /* É possível acrescentar a porcentagem de cada cor após seu código, como na segunda cor deste gradiente em 40%. */
+    width: 500px;
+    height: 200px;
+    border-radius: 10px;
+    margin: auto;
+}

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<!-- saved from url=(0056)https://as.cazamba.com/cs?publisher_id=1413&g=1647778075 -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		
+		<meta name="viewport" content="width=device-width">
+		<title>CZMB</title>
+		<style media="screen">
+		</style>
+		<script type="text/javascript" src="./req" async=""></script><script type="text/javascript" async="">try{try{'as.cazamba.com'==location.host&&(nvg44768.url=document.referrer)}catch(a){}}catch(e){console.error(e);nvg44768.__cleanConfigCache();}</script><script type="text/javascript" async="" id="ttprofilejs" src="./profile"></script><script src="./universal.min.js.download"></script><script type="text/javascript">
+			window._post=function(f,c,d,e){if("undefined"===typeof f)throw"URL parameter is required!";"undefined"===typeof c&&(c=null);"function"!==typeof d&&(d=null);var g=function(a,d,b){b=b||[];if("object"==typeof a)for(var c in a)g(a[c],d?d+"["+c+"]":c,b);else b.push(d+"="+encodeURIComponent(a));return b.join("&")},a=new XMLHttpRequest;e=null;null!=c&&(e=g(c));a.open("POST",f,!0);a.setRequestHeader("Content-type","application/x-www-form-urlencoded");a.withCredentials=!0;a.onreadystatechange=function(){if(4==a.readyState&&200==a.status){var c=a.status.toString(),e=new RegExp(/^2[0-9]{2}$/);switch(a.getResponseHeader("Content-type")){case "application/json; charset=UTF-8":var b=JSON.parse(a.responseText);break;default:b=a.responseText}window._post._res=b;e.test(c)?(null!=d&&(0==d.length?d():d(b)),window._post.hasOwnProperty("done")&&"function"==typeof window._post.done&&(0==window._post.done.length?window._post.done():window._post.done(b))):window._post.hasOwnProperty("fail")&&"function"==typeof window._post.fail&&(0==window._post.fail.length?window._post.fail():window._post.fail(b));window._post.hasOwnProperty("always")&&"function"==typeof window._post.always&&(0==window._post.always.length?window._post.always():window._post.always(b))}};a.send(e)};
+
+			var gotTt = false;
+			var gotNvg = false;
+
+			function sendData(){
+
+				if((gotTt != true) || (gotNvg != true)){
+					return false;
+				}
+
+
+				var data = [];
+
+				data["publisher_id"] = 1413;
+
+				data["tt_data"] = {
+					"A" : _ttprofiles.getAge || null,
+					"E" : _ttprofiles.getEquipment || null,
+					"G" : _ttprofiles.getGender || null,
+					"U" : _ttprofiles.getMicrosegments || null,
+					"LS" : _ttprofiles.getProfiles || null,
+					"C" : _ttprofiles.getSocialClass || null,
+					"S" : _ttprofiles.getSubjects || null,
+					"T" : _ttprofiles.getTeam || null,
+				};
+
+
+
+				data["nvg_data"] = {
+
+					"gender" : nvgGetSegment('gender') || null,
+					"age" : nvgGetSegment('age') || null,
+					"education" : nvgGetSegment('education') || null,
+					"marital" : nvgGetSegment('marital') || null,
+					"income" : nvgGetSegment('income') || null,
+					"everyone" : nvgGetSegment('everyone') || null,
+					"city" : nvgGetSegment('city') || null,
+					"region" : nvgGetSegment('region') || null,
+					"country" : nvgGetSegment('country') || null,
+					"interest" : nvgGetSegment('interest') || null,
+					"product" : nvgGetSegment('product') || null,
+					"brand" : nvgGetSegment('brand') || null,
+					"connection" : nvgGetSegment('connection') || null,
+					"career" : nvgGetSegment('career') || null,
+					"everybuyer" : nvgGetSegment('everybuyer') || null,
+					"custom" : nvgGetSegment('custom') || null,
+
+				}
+
+
+				var a = window._post("/cs", data, function(res){
+				    console.log(res);
+				});
+
+
+			}
+
+			function callbackTt(){
+				gotTt = true;
+				sendData();
+			}
+			function callbackNvg(){
+				gotNvg = true;
+				sendData();
+			}
+		</script>
+
+		<script type="text/javascript">
+			var _ttprofiles = _ttprofiles || [];
+			_ttprofiles.profiles = [];
+			_ttprofiles.push(['_sync', false]);
+			_ttprofiles.push(['_registerCallback', callbackTt]);
+			_ttprofiles.push(['_enableServices']);
+			var _ttprofilesscript = document.createElement("script");
+			_ttprofilesscript.src = "https://d.tailtarget.com/profiles.js";
+			document.head.appendChild(_ttprofilesscript);
+		</script><script src="./profiles.js.download"></script>
+
+		<script id="navegg" type="text/javascript">
+			(function(n,v,g){o='Navegg';if(!n[o]){
+			 a=v.createElement('script');a.src=g;b=document.getElementsByTagName('script')[0];
+			 b.parentNode.insertBefore(a,b);n[o]=n[o]||function(parms){
+			 n[o].q=n[o].q||[];n[o].q.push([this, parms])};}})
+			 (window, document, 'https://tag.navdmp.com/universal.min.js');
+			 window.naveggReady = window.naveggReady||[];
+			 naveggReady.push( function(){
+			 	gotNvg = true;
+			 	sendData();
+			 });
+			 nvg44768 = new Navegg({
+				acc: 44768
+			});
+		</script>
+
+			</head>
+	<body>
+	
+
+</body></html>

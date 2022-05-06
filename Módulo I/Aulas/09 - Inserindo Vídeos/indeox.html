@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inserindo Vídeos</title>
+</head>
+<body>
+    <h1>Reproduzindo Vídeos</h1>
+    <hr>
+    <h2>Reproduzindo localmente</h2>
+    <p>É possível reproduzir vídeos em repositório próprio, como este vídeo de exemplo aqui abaixo que está contido em uma subpasta. <br><small>(Tag usada: <code>&lt;video&gt;</code>)</small></p>
+    <video controls width="500"> <!-- Outros atributos: width="" (Largura do vídeo); porter="" (Inserir imagem de capa); loop (reprodução em looping)-->
+        <source src="media/meu-video.mp4" type="video/mp4">
+        <p>Seu navegador não tem compatibilidade com reprodução de vídeos.</p>
+    </video>
+    <h2>Reproduzindo externamente</h2>
+    <p>É póssivel reproduzir no nosso site vídeos hospedados externamente em outros servidores, como os dos exemplos abaixo. <br><small>(Método: Nos respectivos sites, existe um botão de compartilhar os vídeos. Apenas copie o código &lt;inframe&gt; e cole no seu código HTML)</small></p>
+    <ol>
+        <li><strong>Youtube:</strong></li>
+            <br>
+            <iframe width="500" height="281" src="https://www.youtube.com/embed/QI0nHTaZ5LM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <br><p></p>
+        <li><strong>Vimeo:</strong></li>
+            <br>
+            <iframe src="https://player.vimeo.com/video/317251673?h=8d4e265736" width="500" height="281" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+    </ol>
+    <footer>Confira o código fonte</footer>
+</body>
+</html>

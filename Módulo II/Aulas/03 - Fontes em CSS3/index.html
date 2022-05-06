@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tipografia</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Send+Flowers&display=swap');
+
+        @import url('https://fonts.googleapis.com/css2?family=Rock+3D&display=swap');
+
+        @font-face {
+            font-family: 'Pirate'; /* Você define qual será o nome */
+            src: url('fonts/Pirate of the Seaside Bubbles.ttf') format('truetype'), url('fonts/Pirate of the Seaside.ttf') format('truetype');
+
+            /*  
+            Tipos de format()
+            - opentype (otf)
+            - truetype (ttf)
+            - embedded-opentype
+            - truetype-att (Apple Advanced Typography)
+            - svg
+            */
+        }
+
+        body{
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 1em;
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* O tamanho padrão da fonte é 16px ou 1em.
+
+        Shorthand font: 
+        Seguir a ordem -> style -> font-weight -> font-size -> font-family
+
+        Repare no exempo em h1, h2. Logo abaixo.
+        
+        */
+
+        h1, h2 {
+            font: italic bold 2em 'Times New Roman', Times, serif;
+            text-decoration: underline;
+        }
+
+        h2#fontes_externas {
+            font-family: 'Rock 3D', cursive;
+            text-decoration: none;
+        }
+
+        p#fb {
+            font-family: 'Pirate', cursive;
+            font-weight: normal;
+            font-style: normal;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Título primário</h1>
+    <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Praesentium dicta in fugiat. Soluta, nesciunt aliquam porro repellat nostrum autem deserunt facere reiciendis laudantium. Consequuntur impedit placeat quas tenetur consequatur? Earum. Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quaerat consequuntur doloremque non ipsa ducimus mollitia corrupti omnis quod provident ea voluptatibus, debitis dicta maxime aliquam inventore iste modi voluptates vel?</p>
+    <h2>Subtítulo</h2>
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eveniet omnis beatae facilis perspiciatis vel deserunt obcaecati reprehenderit quas! Numquam debitis perspiciatis dolores aperiam corrupti non beatae quibusdam, dolorem eum id.</p>
+
+    <h2 id="fontes_externas">Usando fontes externas</h2>
+    <h3>Através do Google Fontes</h3>
+    <p style="font-family: 'Send Flowers', cursive;">Lorem ipsum, dolor sit amet consectetur adipisicing elit. Enim quaerat ut soluta quae hic ad at consequuntur labore. Aliquid officiis iure provident quidem iste perspiciatis sunt illum ad, accusantium sapiente!
+    </p>
+    <h3>Fontes baixadas</h3>
+    <p id="fb">Lorem ipsum, dolor sit amet consectetur adipisicing elit. Dolorem minus alias quidem quaerat, tenetur autem culpa dolorum quisquam veritatis. Perspiciatis, ullam repellat! Quod accusantium animi laborum dolor recusandae rerum ratione.
+    </p>
+
+</body>
+</html>

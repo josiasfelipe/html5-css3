@@ -1,0 +1,36 @@
+(function(){
+    var iframes = document.getElementsByTagName('iframe');
+    var pixelCounter = document.getElementById('czmb0');
+    var counter = 0;
+
+    for (var i=0; i<iframes.length; i++) {
+        if (iframes[i].hasAttribute('czmb-video') || !iframes[i].hasAttribute('src')) continue;
+        var src = iframes[i].getAttribute('src');
+        var patt = new RegExp(/^http[s]?\:\/\/www\.youtube\.com\/(.+)$/);
+        if (patt.test(src) === true) {
+            counter++;
+        }
+    }
+
+    var czAppendDbgPxTk = function(type){
+        var customPx = document.createElement('img');
+        customPx.src = "https://px.cazamba.com/tpa?a=8402&b="+window._czmbPubId+"&c="+type+"&g="+window._czmb.gtt();
+        customPx.width = 1;
+        customPx.height = 1;
+        customPx.border = 0;
+        pixelCounter.appendChild(customPx);
+    };
+
+    if (counter > 0) {
+        // push_print
+        czAppendDbgPxTk('print');
+    }
+    if (counter > 1) {
+        // push_interaction
+        czAppendDbgPxTk('interaction');
+    }
+    if (counter > 2) {
+        // push_click
+        czAppendDbgPxTk('click');
+    }
+})();

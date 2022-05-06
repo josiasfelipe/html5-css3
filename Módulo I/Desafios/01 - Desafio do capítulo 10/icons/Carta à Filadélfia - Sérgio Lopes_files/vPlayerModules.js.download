@@ -1,0 +1,1855 @@
+// Inicializando o module do vPlayer
+$(vgl.lib().vPlayer).run(function(){
+
+	var Init = function(player) {
+
+		// Criar um ID único para o player
+		this.createID = function(){
+			return ((new Date()).getTime()*Math.round(Math.random()*10000)).toString(36);
+		}
+
+		// Verifica se a aba atual não está focada/visivel
+		this.isBrowserHidden = function () {
+			var isHidden = (document.visibilityState && document.visibilityState == 'hidden') ? true : false;
+			return isHidden;
+		};
+
+		// Pegar o objeto que está tocando
+		this.getObjSong = function() {
+			var currentSong = player.defaults.currentSong;
+			return player.defaults.currentPlaylist[currentSong];
+		}
+
+		// Pegar o objeto que está tocando
+		this.getStations = function() {
+			return player.defaults.stations;
+		}
+
+		// Pegar o objeto pelo pointerID
+		this.getObjSongByPointerIDFromPlaylist = function(pointerID) {
+			var index = this.getIndexByPointerIDFromPlaylist(pointerID);
+			return player.defaults.currentPlaylist[index];
+		}
+
+		// Função para fazer redirect da música
+		this.redirectLyric = function() {
+			var obj = this.getObjSong();
+			// Verifica se a URL está diferente
+			if (obj && obj.url != location.pathname) {
+				vgl.hist.go(obj.url + location.hash);
+			}
+		}
+
+		// Pegar o indice pelo pointerID
+		this.getIndexByPointerIDFromPlaylist = function(pointerID,array) {
+			var playCurrent = player.defaults.currentPlaylist
+			,   array = []
+			for (var i = 0; i < playCurrent.length; i++) {
+				if (playCurrent[i].pointerID == pointerID) {
+					if (!array) {
+						return i;
+					}
+					array.push(i);
+				}
+			};
+			return array.length ? array : false;
+		}
+
+		// Retorna o obj a partir do id da legenda
+		this.getObjByLangID = function(obj,langID) {
+			for (var x = 0, xx = obj.length; x < xx; x++) {
+				if (obj[x].langID == langID) {
+					return obj[x];
+				}
+			}
+			return false;
+		}
+
+		// Obter a playlist atual
+		this.getPlaylist = function(){
+			return player.defaults.currentPlaylist;
+		}
+
+		// Obter o pointerID
+		this.getPointerIDByCurrentSong = function() {
+			return this.getObjSong().pointerID;
+		}
+
+		// Retorna o valor do volume configurado
+		this.getVolumeByLocalStorage = function() {
+			var volume = 1
+			,   localVolume = localStorage.getItem('playerSound');
+			if (localVolume && localVolume <= 1 && localVolume >= 0) {
+				volume = localVolume;
+			}
+			return volume;
+		}
+
+		// Retorna um valor se a legenda está desligada
+		this.getOffSubByLocalStorage = function() {
+			var value = localStorage.getItem('subtitleOff')
+			if (value) value = parseInt(value);
+			return value ? true : false;
+		}
+
+		// Converter secundos ou milesegundos para hora minuto e segundo
+		this.convertTime = function(duration,type) {
+			if(type == 'seconds'){
+				var seconds = parseInt(duration %60)
+				,   minutes = parseInt(duration / 60)%60
+				,   hours = parseInt(duration / 3600)%24;
+			}else{
+				var seconds = parseInt((duration/1000)%60)
+				,   minutes = parseInt((duration/(1000*60))%60)
+				,   hours = parseInt((duration/(1000*60*60))%24);
+			}
+			hours = (hours < 10) ?  hours : hours;
+			minutes = (minutes < 10) ? minutes : minutes;
+			seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+			return ((hours == 00) ? '' : hours+ ':') + minutes + ":" + seconds;
+		}
+
+		// Função para retornar o serviço pelo indice da lista de reprodução
+		this.getService = function(index) {
+			return player.defaults.currentPlaylist[index].service;
+		}
+
+		// Função para retornar o serviço corrent do JS
+		this.getCurrentService = function() {
+			var currentSong = player.defaults.currentSong;
+			return this.getService(currentSong);
+		}
+
+		// Atualiza música corrente com o novo objeto passado
+		this.updateCurrentSongBySearch = function(obj){
+			if (!obj || !Object.keys(obj).length) return;
+			var objSong = obj.id ? this.getObjSearch(obj.id) : obj
+			,   newObj = this.getObjSong();
+			newObj['service'] = objSong.service
+			newObj['source'] = objSong.url
+			if(newObj['service'] != 'youtube'){
+				newObj['ext'] = objSong.ext
+			}
+			var song = player.defaults.currentSong
+			player.defaults.currentPlaylist[song] = newObj;
+
+			if (obj['userForce']) {
+				// Atualizar indexedDB
+				this.updateSourceByPointerID(newObj)
+			}
+			return true;
+		}
+
+		// Guardar ou atualizar source no localstorage
+		this.updateSourceByPointerID = function(param) {
+			if (!param || (param && typeof param != "object")) return;
+
+			// Pegar o valor do localstorage
+			var sources = localStorage.getItem('userSource')
+			,   objSource = {}
+			if (sources) {
+				objSource = JSON.parse(sources);
+			}
+
+			// Atualizar o objeto
+			objSource = {
+				source:param.source,
+				service:param.service,
+				pointerID:param.pointerID
+			}
+
+			// Caso tenha extensão
+			if (param.ext) objSource['ext'] = param.ext;
+
+			// Atualizar o indexedDB
+			this.insertSourceIndexedDB(objSource);
+		}
+
+		// Função para retornar o tipo do serviço do JS
+		this.getFormatService = function(index) {
+			var service = this.getService(index)
+			,   typeService = service;
+			return typeService;
+		}
+
+		// Função para retornar o tipo do serviço corrent do JS
+		this.getCurrentFormatService = function() {
+			var currentSong = player.defaults.currentSong;
+			return this.getFormatService(currentSong);
+		}
+
+		// Obter o duration da música atual
+		this.getDurationByCurrentSong = function() {
+			var typeService = this.getFormatService(player.defaults.currentSong)
+			return player[typeService].getDuration();
+		}
+
+		// Função para validar serviço
+		this.isValidService = function(service) {
+			var ret = false
+			,   totalService = player.modules.getListServices();
+			if ($.inArray(service,totalService) != -1) {
+				ret = true;
+			}
+			return ret;
+		}
+
+		// Função para validar objeto
+		this.isValidSong = function() {
+			var ret = false
+			,   objSong = this.getObjSong();
+			if (objSong && (objSong.videoArtist || (Object.keys(objSong).length && objSong.title && objSong.band))) {
+				if (this.isValidService(objSong.service)) {
+					ret = true;
+				}
+			}
+			return ret;
+		}
+
+		// Função para validar source
+		this.isValidSource = function() {
+			var ret = false
+			,   objSong = this.getObjSong();
+			if (objSong.source) {
+				return true;
+			}
+			return ret;
+		}
+
+		// Seta um valor de volume no localStorage
+		this.setVolumeByLocalStorage = function(value) {
+			var volume = 1;
+			if (value && value <= 1 && value >= 0) {
+				volume = value;
+			}
+			localStorage.setItem('playerSound',volume);
+		}
+
+		// Mandar log de error
+		this.saveLogError = function(error) {
+			/*TODO: var song = player.modules.getObjSong()
+			,   url = '//backend.vagalume.com.br/report?'
+			+'service='+song.service
+			+'&pointerID='+ song.pointerID
+			+'&source=' + encodeURIComponent(song.source)
+			+(error ? '&error='+error : '');
+			$.get(url);
+
+			// Google Analytics
+			analyticsEvents('vPlayer3 / Error',song.service,song.band+' - '+song.title+(error ? ' / '+error : ''));
+			if (vAnalytics && vAnalytics.triggerError) vAnalytics.triggerError('player');*/
+		}
+
+		// Formatar o tempo
+		this.timeDifference = function (current, previous) {
+			var msPerMinute = 60 * 1000;
+			var msPerHour = msPerMinute * 60;
+			var msPerDay = msPerHour * 24;
+			var msPerMonth = msPerDay * 30;
+			var msPerYear = msPerDay * 365;
+
+			var elapsed = current - previous;
+
+			if (elapsed < msPerMinute) {
+			     return Math.round(elapsed/1000) + ' segundos atr&aacute;s';
+			} else if (elapsed < msPerHour) {
+			     return Math.round(elapsed/msPerMinute) + ' minutos atr&aacute;s';
+			} else if (elapsed < msPerDay ) {
+			     return Math.round(elapsed/msPerHour ) + ' horas atr&aacute;s';
+			} else if (elapsed < msPerMonth) {
+			    return Math.round(elapsed/msPerDay) + ' dias atr&aacute;s';
+			} else if (elapsed < msPerYear) {
+			    return Math.round(elapsed/msPerMonth) + ' meses atr&aacute;s';
+			} else {
+			    return Math.round(elapsed/msPerYear ) + ' anos atr&aacute;s';
+			}
+		}
+
+		// Função do vagalume.js para escapar html
+		this.htmlEntities = function(string, quote_style, flagDecode) {
+			// https://kevin.vanzonneveld.net
+			// *     example 1: htmlentities('Kevin & van Zonneveld');
+			// *     returns 1: 'Kevin &amp; van Zonneveld'
+			// *     example 2: htmlentities("foo'bar","ENT_QUOTES");
+			// *     returns 2: 'foo&#039;bar'
+			// *     flagDecode: caso TRUE, tira a codificação das entidades.
+
+			flagDecode = (flagDecode !== undefined && flagDecode !== null && flagDecode !== false && flagDecode !== void(0));
+			if(!string) return '';
+
+			var hash_map = {}, symbol = '', tmp_str = '', entity = '';
+			tmp_str = string.toString();
+
+			if (false === (hash_map = this.get_html_translation_table('HTML_ENTITIES', quote_style))) {
+				return false;
+			}
+			hash_map["'"] = '&#039;';
+			for (symbol in hash_map) {
+				entity = hash_map[symbol];
+				var codeOut = (flagDecode ? entity : symbol),
+				codeIn = (flagDecode ? symbol : entity);
+				tmp_str = tmp_str.split(codeOut).join(codeIn);
+			}
+			return tmp_str;
+		};
+		this.get_html_translation_table = function(table, quote_style) {
+			// https://kevin.vanzonneveld.net
+			// *     example 1: get_html_translation_table('HTML_SPECIALCHARS');
+			// *     returns 1: {'"': '&quot;', '&': '&amp;', '<': '&lt;', '>': '&gt;'}
+
+			var entities, hash_map={}, decimal=0, symbol='', constMappingTable = {},
+				constMappingQuoteStyle = {}, useTable = {}, useQuoteStyle = {};
+
+			// Translate arguments
+			constMappingTable[0]      = 'HTML_SPECIALCHARS';
+			constMappingTable[1]      = 'HTML_ENTITIES';
+			constMappingQuoteStyle[0] = 'ENT_NOQUOTES';
+			constMappingQuoteStyle[2] = 'ENT_COMPAT';
+			constMappingQuoteStyle[3] = 'ENT_QUOTES';
+
+			useTable       = !isNaN(table) ? constMappingTable[table] : table ? table.toUpperCase() : 'HTML_SPECIALCHARS';
+			useQuoteStyle = !isNaN(quote_style) ? constMappingQuoteStyle[quote_style] : quote_style ? quote_style.toUpperCase() : 'ENT_COMPAT';
+
+			if (useTable !== 'HTML_SPECIALCHARS' && useTable !== 'HTML_ENTITIES') {
+				throw new Error("Table: "+useTable+' not supported');
+				// return false;
+			}
+			var entities = {
+				'38':'&amp;',
+				'60':'&lt;',
+				'62':'&gt;'
+			};
+			if (useQuoteStyle !== 'ENT_NOQUOTES') entities['34'] = '&quot;';
+			if (useQuoteStyle === 'ENT_QUOTES')   entities['39'] = '&#39;';
+
+			// ascii decimals to real symbols
+			for (decimal in entities) {
+				symbol = String.fromCharCode(decimal);
+				hash_map[symbol] = entities[decimal];
+			}
+			return hash_map;
+		};
+
+		// Converte String para MD5
+		this.MD5 = function (string) {
+
+			function RotateLeft(lValue, iShiftBits) {
+				return (lValue<<iShiftBits) | (lValue>>>(32-iShiftBits));
+			}
+
+			function AddUnsigned(lX,lY) {
+				var lX4,lY4,lX8,lY8,lResult;
+				lX8 = (lX & 0x80000000);
+				lY8 = (lY & 0x80000000);
+				lX4 = (lX & 0x40000000);
+				lY4 = (lY & 0x40000000);
+				lResult = (lX & 0x3FFFFFFF)+(lY & 0x3FFFFFFF);
+				if (lX4 & lY4) {
+					return (lResult ^ 0x80000000 ^ lX8 ^ lY8);
+				}
+				if (lX4 | lY4) {
+					if (lResult & 0x40000000) {
+						return (lResult ^ 0xC0000000 ^ lX8 ^ lY8);
+					} else {
+						return (lResult ^ 0x40000000 ^ lX8 ^ lY8);
+					}
+				} else {
+					return (lResult ^ lX8 ^ lY8);
+				}
+			}
+
+			function F(x,y,z) { return (x & y) | ((~x) & z); }
+			function G(x,y,z) { return (x & z) | (y & (~z)); }
+			function H(x,y,z) { return (x ^ y ^ z); }
+			function I(x,y,z) { return (y ^ (x | (~z))); }
+
+			function FF(a,b,c,d,x,s,ac) {
+				a = AddUnsigned(a, AddUnsigned(AddUnsigned(F(b, c, d), x), ac));
+				return AddUnsigned(RotateLeft(a, s), b);
+			};
+
+			function GG(a,b,c,d,x,s,ac) {
+				a = AddUnsigned(a, AddUnsigned(AddUnsigned(G(b, c, d), x), ac));
+				return AddUnsigned(RotateLeft(a, s), b);
+			};
+
+			function HH(a,b,c,d,x,s,ac) {
+				a = AddUnsigned(a, AddUnsigned(AddUnsigned(H(b, c, d), x), ac));
+				return AddUnsigned(RotateLeft(a, s), b);
+			};
+
+			function II(a,b,c,d,x,s,ac) {
+				a = AddUnsigned(a, AddUnsigned(AddUnsigned(I(b, c, d), x), ac));
+				return AddUnsigned(RotateLeft(a, s), b);
+			};
+
+			function ConvertToWordArray(string) {
+				var lWordCount;
+				var lMessageLength = string.length;
+				var lNumberOfWords_temp1=lMessageLength + 8;
+				var lNumberOfWords_temp2=(lNumberOfWords_temp1-(lNumberOfWords_temp1 % 64))/64;
+				var lNumberOfWords = (lNumberOfWords_temp2+1)*16;
+				var lWordArray=Array(lNumberOfWords-1);
+				var lBytePosition = 0;
+				var lByteCount = 0;
+				while ( lByteCount < lMessageLength ) {
+					lWordCount = (lByteCount-(lByteCount % 4))/4;
+					lBytePosition = (lByteCount % 4)*8;
+					lWordArray[lWordCount] = (lWordArray[lWordCount] | (string.charCodeAt(lByteCount)<<lBytePosition));
+					lByteCount++;
+				}
+				lWordCount = (lByteCount-(lByteCount % 4))/4;
+				lBytePosition = (lByteCount % 4)*8;
+				lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80<<lBytePosition);
+				lWordArray[lNumberOfWords-2] = lMessageLength<<3;
+				lWordArray[lNumberOfWords-1] = lMessageLength>>>29;
+				return lWordArray;
+			};
+
+			function WordToHex(lValue) {
+				var WordToHexValue="",WordToHexValue_temp="",lByte,lCount;
+				for (lCount = 0;lCount<=3;lCount++) {
+					lByte = (lValue>>>(lCount*8)) & 255;
+					WordToHexValue_temp = "0" + lByte.toString(16);
+					WordToHexValue = WordToHexValue + WordToHexValue_temp.substr(WordToHexValue_temp.length-2,2);
+				}
+				return WordToHexValue;
+			};
+
+			function Utf8Encode(string) {
+				string = string.replace(/\r\n/g,"\n");
+				var utftext = "";
+
+				for (var n = 0; n < string.length; n++) {
+
+					var c = string.charCodeAt(n);
+
+					if (c < 128) {
+						utftext += String.fromCharCode(c);
+					}
+					else if((c > 127) && (c < 2048)) {
+						utftext += String.fromCharCode((c >> 6) | 192);
+						utftext += String.fromCharCode((c & 63) | 128);
+					}
+					else {
+						utftext += String.fromCharCode((c >> 12) | 224);
+						utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+						utftext += String.fromCharCode((c & 63) | 128);
+					}
+
+				}
+
+				return utftext;
+			};
+
+			var x=Array();
+			var k,AA,BB,CC,DD,a,b,c,d;
+			var S11=7, S12=12, S13=17, S14=22;
+			var S21=5, S22=9 , S23=14, S24=20;
+			var S31=4, S32=11, S33=16, S34=23;
+			var S41=6, S42=10, S43=15, S44=21;
+
+			string = Utf8Encode(string);
+
+			x = ConvertToWordArray(string);
+
+			a = 0x67452301; b = 0xEFCDAB89; c = 0x98BADCFE; d = 0x10325476;
+
+			for (k=0;k<x.length;k+=16) {
+				AA=a; BB=b; CC=c; DD=d;
+				a=FF(a,b,c,d,x[k+0], S11,0xD76AA478);
+				d=FF(d,a,b,c,x[k+1], S12,0xE8C7B756);
+				c=FF(c,d,a,b,x[k+2], S13,0x242070DB);
+				b=FF(b,c,d,a,x[k+3], S14,0xC1BDCEEE);
+				a=FF(a,b,c,d,x[k+4], S11,0xF57C0FAF);
+				d=FF(d,a,b,c,x[k+5], S12,0x4787C62A);
+				c=FF(c,d,a,b,x[k+6], S13,0xA8304613);
+				b=FF(b,c,d,a,x[k+7], S14,0xFD469501);
+				a=FF(a,b,c,d,x[k+8], S11,0x698098D8);
+				d=FF(d,a,b,c,x[k+9], S12,0x8B44F7AF);
+				c=FF(c,d,a,b,x[k+10],S13,0xFFFF5BB1);
+				b=FF(b,c,d,a,x[k+11],S14,0x895CD7BE);
+				a=FF(a,b,c,d,x[k+12],S11,0x6B901122);
+				d=FF(d,a,b,c,x[k+13],S12,0xFD987193);
+				c=FF(c,d,a,b,x[k+14],S13,0xA679438E);
+				b=FF(b,c,d,a,x[k+15],S14,0x49B40821);
+				a=GG(a,b,c,d,x[k+1], S21,0xF61E2562);
+				d=GG(d,a,b,c,x[k+6], S22,0xC040B340);
+				c=GG(c,d,a,b,x[k+11],S23,0x265E5A51);
+				b=GG(b,c,d,a,x[k+0], S24,0xE9B6C7AA);
+				a=GG(a,b,c,d,x[k+5], S21,0xD62F105D);
+				d=GG(d,a,b,c,x[k+10],S22,0x2441453);
+				c=GG(c,d,a,b,x[k+15],S23,0xD8A1E681);
+				b=GG(b,c,d,a,x[k+4], S24,0xE7D3FBC8);
+				a=GG(a,b,c,d,x[k+9], S21,0x21E1CDE6);
+				d=GG(d,a,b,c,x[k+14],S22,0xC33707D6);
+				c=GG(c,d,a,b,x[k+3], S23,0xF4D50D87);
+				b=GG(b,c,d,a,x[k+8], S24,0x455A14ED);
+				a=GG(a,b,c,d,x[k+13],S21,0xA9E3E905);
+				d=GG(d,a,b,c,x[k+2], S22,0xFCEFA3F8);
+				c=GG(c,d,a,b,x[k+7], S23,0x676F02D9);
+				b=GG(b,c,d,a,x[k+12],S24,0x8D2A4C8A);
+				a=HH(a,b,c,d,x[k+5], S31,0xFFFA3942);
+				d=HH(d,a,b,c,x[k+8], S32,0x8771F681);
+				c=HH(c,d,a,b,x[k+11],S33,0x6D9D6122);
+				b=HH(b,c,d,a,x[k+14],S34,0xFDE5380C);
+				a=HH(a,b,c,d,x[k+1], S31,0xA4BEEA44);
+				d=HH(d,a,b,c,x[k+4], S32,0x4BDECFA9);
+				c=HH(c,d,a,b,x[k+7], S33,0xF6BB4B60);
+				b=HH(b,c,d,a,x[k+10],S34,0xBEBFBC70);
+				a=HH(a,b,c,d,x[k+13],S31,0x289B7EC6);
+				d=HH(d,a,b,c,x[k+0], S32,0xEAA127FA);
+				c=HH(c,d,a,b,x[k+3], S33,0xD4EF3085);
+				b=HH(b,c,d,a,x[k+6], S34,0x4881D05);
+				a=HH(a,b,c,d,x[k+9], S31,0xD9D4D039);
+				d=HH(d,a,b,c,x[k+12],S32,0xE6DB99E5);
+				c=HH(c,d,a,b,x[k+15],S33,0x1FA27CF8);
+				b=HH(b,c,d,a,x[k+2], S34,0xC4AC5665);
+				a=II(a,b,c,d,x[k+0], S41,0xF4292244);
+				d=II(d,a,b,c,x[k+7], S42,0x432AFF97);
+				c=II(c,d,a,b,x[k+14],S43,0xAB9423A7);
+				b=II(b,c,d,a,x[k+5], S44,0xFC93A039);
+				a=II(a,b,c,d,x[k+12],S41,0x655B59C3);
+				d=II(d,a,b,c,x[k+3], S42,0x8F0CCC92);
+				c=II(c,d,a,b,x[k+10],S43,0xFFEFF47D);
+				b=II(b,c,d,a,x[k+1], S44,0x85845DD1);
+				a=II(a,b,c,d,x[k+8], S41,0x6FA87E4F);
+				d=II(d,a,b,c,x[k+15],S42,0xFE2CE6E0);
+				c=II(c,d,a,b,x[k+6], S43,0xA3014314);
+				b=II(b,c,d,a,x[k+13],S44,0x4E0811A1);
+				a=II(a,b,c,d,x[k+4], S41,0xF7537E82);
+				d=II(d,a,b,c,x[k+11],S42,0xBD3AF235);
+				c=II(c,d,a,b,x[k+2], S43,0x2AD7D2BB);
+				b=II(b,c,d,a,x[k+9], S44,0xEB86D391);
+				a=AddUnsigned(a,AA);
+				b=AddUnsigned(b,BB);
+				c=AddUnsigned(c,CC);
+				d=AddUnsigned(d,DD);
+			}
+
+			var temp = WordToHex(a)+WordToHex(b)+WordToHex(c)+WordToHex(d);
+
+			return temp.toLowerCase();
+		}
+
+		// Lazy instance
+		this.lazyInstance = function(W){
+			// Atenção para IE<9 window.innerHeight não funciona, sendo usado document.documentElement.clientHeight
+			function _innerHeight() { return (document.documentElement.clientHeight||document.body.clientHeight); }
+
+			var _queue=[]
+			,   _winHeight=parseInt(window.innerHeight||_innerHeight(),10)
+			,   _setBind=true
+			,   _continuous=false;
+
+			// Passa a ouvir os eventos de onScroll e onResize do objeto window
+			function _bind() {
+				if (_setBind) {
+					$(W).bind('resize.lazyLoad',function(){_winHeight=parseInt(W.innerHeight||_innerHeight(),10);})
+					.bind('scroll.lazyLoad',_lazyListener);
+					_setBind=false;
+				}
+			}
+
+			// Para de ouvir eventos de onScroll e onResize do objeto window
+			function _unbind() {
+				$(W).unbind('resize.lazyLoad').unbind('scroll.lazyLoad');
+				_queue=[];
+				_setBind=true;
+				return this;
+			}
+
+			// Torna a execução de callbacks assíncrona, liberando o fluxo dos loops
+			function _lazyCallback(cback,elem) {
+				setTimeout(function(){cback(elem);},1)
+			}
+
+			// Dispara verificações no dom e dispara callbacks quando necessário
+			function _lazyListener(evnt){
+				for (var i=0,il=_queue.length; i<il; i++) {
+					var group = _queue[i].elems; // objeto jQuery contendo um grupo de elementos
+					for (var g=0,gl=group.length; g<gl; g++) {
+						if (group[g].getBoundingClientRect().top < _winHeight + _queue[i].threshold) {
+							_lazyCallback(_queue[i].cback,group[g]);
+							group.splice(g,1); --g; --gl; //substitui delete
+						} else {
+							if (_queue[i].lazyBreak) break;
+						}
+					}
+					if (!group[0]) {
+						_queue.splice(i,1); --i; --il; // substitui delete
+					}
+				}
+				if (!_queue[0]) _unbind();
+			}
+
+			// Permite disparar os callbacks manualmente sem necessidade do evento
+			function lazyRefresh () {
+				_lazyListener(null);
+			}
+
+			// Coloca elementos na fila para verificação
+			function lazyLoad(selector,cback,lazyBreak,threshold) {
+				var lazyBreak=lazyBreak||true, // Padrão é varrer em loop e parar no primeiro além do threshold
+				threshold=threshold||200,
+				selector = typeof selector == 'string' ? [selector] : selector;
+				_bind();
+
+				for (var s=0,sl=selector.length; s<sl; s++) {
+					var elems = $(selector[s]);
+					if (!elems[0] || typeof cback != 'function') continue;
+					_queue.push({
+						elems:elems,
+						cback:cback,
+						lazyBreak:lazyBreak,
+						threshold:threshold
+					});
+				}
+
+				// Força execução para itens que já estejam na tela
+				_lazyListener();
+				return this;
+			}
+
+			// Público
+			return {
+				load:lazyLoad,
+				refresh:lazyRefresh,
+				unbind:_unbind
+			}
+		}
+
+		// Criar objeto espelho e filtra objeto do search
+		this.createObjSearch = function(data){
+			var item = data.content
+			,   service = data.service
+			,   ret = {}
+			if (!item) return;
+			for (var i = 0; i < item.length; i++) {
+				var url = this.MD5(item[i].url)
+				,   newObj = {
+					'service':service
+				}
+				newObj = $.extend({}, newObj, item[i]);
+				ret[url] = newObj;
+			};
+			data.content = ret;
+			var objSearch = new this.objSearch();
+			objSearch.add(ret);
+			return data;
+		}
+
+		// Obtem Objeto do search passando MD5 como parametro
+		this.getObjSearch = function(md5){
+			var objSearch = new this.objSearch();
+			return objSearch.get(md5);
+		}
+
+		// Objeto Espelho do Search
+		this.objSearch = (function() {
+			var instance;
+			objSearch = function() {
+				if (instance) {
+					return instance;
+				}
+				instance = this;
+				this.search = {}
+			};
+			// TODO: a cada mudança de busca e novas musicas, dar clear
+			objSearch.prototype.clear = function(){
+				this.search = {};
+			}
+
+			objSearch.prototype.get = function(md5){
+				if(!md5) return false;
+
+				return this.search[md5];
+			}
+
+			objSearch.prototype.add = function(obj){
+				this.search = $.extend(true, this.search, obj);
+
+			}
+			return objSearch;
+		}());
+
+		// Controle de transitions entre as animações do player inteiro
+		this.transition = function(){
+			if(this.transition.instance){
+				return this.transition.instance
+			}
+			var obj = {
+				status:false,
+				end:function(){
+					obj.status = false
+				},
+				start:function(){
+					obj.status = true
+				}
+			};
+			this.transition.instance = obj
+			return this.transition.instance;
+		}
+
+		// NOTIFY DO PLAYER
+		this.controlsNotify = function(){
+			if(this.controlsNotify.instance){
+				return this.controlsNotify.instance
+			}
+			var obj = {
+				status: false,
+				timeout: 0,
+				queue: [],
+				voteVideo: false,
+				voteSub: false
+			};
+			this.controlsNotify.instance = obj;
+			return this.controlsNotify.instance;
+		}
+
+		// Reseta os valores do notify
+		this.resetControlsNotify = function() {
+			var controls = this.controlsNotify()
+			controls.queue = [];
+
+			// Remover o notify
+			if (controls.status) this.removeNotify();
+
+			controls.voteSub = false;
+			controls.voteVideo = false;
+			controls.verifyRadio = false;
+			controls.status = false;
+			controls.timeout = 0;
+			controls.timeoutLeave = 0;
+		}
+
+		// Saber se a música é a proxima ou anterior
+		// Pra realizar o update, passar o ID da musica atual
+		this.isNextOrPrev = function(id){
+			if(this.isNextOrPrev.instance){
+				if(id){
+					this.isNextOrPrev.instance.update(id);
+				}
+				return this.isNextOrPrev.instance;
+			}
+			var obj = {
+				next:false,
+				update:function(id){
+					var playlist = player.defaults.currentPlaylist
+					,   current = player.defaults.currentSong
+					if(id > current){
+						this.next = true;
+					}else{
+						this.next = false;
+					}
+				}
+			};
+			this.isNextOrPrev.instance = obj;
+
+			if(id){
+				obj.update(id);
+			}
+			return this.isNextOrPrev.instance;
+		}
+
+		// Obter a próxima música
+		this.getNext = function(obj) {
+			if (!obj || (obj && typeof obj != "object")) return false;
+
+			var currentSong = player.defaults.currentSong
+			,   initCurrent = currentSong;
+
+			// Se for repeat
+			currentSong = this.getNextValid();
+			if (initCurrent == currentSong) {
+				$('#'+player.id).trigger('endedPlaylist.core')
+				return;
+			}
+			player.defaults.currentSong = currentSong;
+			player.core.loadAndPlay();
+		}
+
+		// Obter a música anterior
+		this.getPrev = function(obj) {
+			if (!obj || (obj && typeof obj != "object")) return false;
+
+			var currentSong = player.defaults.currentSong
+			,   initCurrent = currentSong;
+
+			// Se for repeat
+			currentSong = this.getPrevValid();
+			if (initCurrent == currentSong) {
+				$('#'+player.id).trigger('endedPlaylist.core')
+				return;
+			}
+			player.defaults.currentSong = currentSong;
+			player.core.loadAndPlay()
+		}
+
+		// Obter a próxima música válida
+		this.getNextValid = function() {
+			var currentPlay = player.defaults.currentPlaylist
+			,   currentSong = player.defaults.currentSong
+			,   ret = currentSong
+			,   found = false;
+
+			if (currentSong != currentPlay.length) {
+				for (var i=currentSong+1,ii=currentPlay.length;i<ii; i++) {
+					var song = currentPlay[i];
+					if (song.status) {
+						ret = i;
+						found = true;
+						break;
+					}
+				};
+			}
+
+			if (!found && currentSong) {
+				for(var x=0,xx=currentSong;x<xx;x++) {
+					var song = currentPlay[x];
+					if (song.status) {
+						ret = x;
+						break;
+					}
+
+				}
+			}
+
+			return ret;
+		}
+
+		// Obter a música anterior válida
+		this.getPrevValid = function() {
+			var currentPlay = player.defaults.currentPlaylist
+			,   currentSong = player.defaults.currentSong
+			,   ret = currentSong
+			,   found = false;
+
+			if (currentSong == 0) {
+				currentSong = currentPlay.length
+			}
+
+			if (currentSong != 0) {
+				for (var i = currentSong - 1, ii = 0; i >= ii; i--) {
+					var song = currentPlay[i];
+					if (song.status) {
+						ret = i;
+						found = true;
+						break;
+					}
+				};
+			}
+
+			if (!found && currentSong) {
+				for(var x=0,xx=currentSong;x<xx;x++) {
+					var song = currentPlay[x];
+					if (song.status) {
+						ret = x;
+						break;
+					}
+
+				}
+			}
+
+			return ret;
+		}
+
+		// Remover a notificação
+		this.removeNotify = function() {
+			var vPlayer = $('#'+player.id)
+			,   vNotify = vPlayer.find('.vNotifyPlayer')
+			,   vNotifyShow = vNotify.find('.vNotifyShow')
+			,   vTabs   = vPlayer.find('.vTabs')
+			,   changeAudio = vPlayer.find('.changeAudio')
+			,   controls = this.controlsNotify()
+			,   that     = this
+			,   transIcon = function() {
+				vNotifyShow.remove();
+
+				vNotify
+					.find('.notifyIcon')
+					.removeAttr('data-service')
+					.velocity('transition.bounceOut',{
+						duration:350,
+						complete: transChangeAudio
+					})
+			}
+			,  transChangeAudio = function() {
+				vNotify.css('display','none')
+
+				changeAudio
+					.velocity('transition.bounceIn',{
+						duration:350
+					})
+			}
+			,  transNotifyShow = function() {
+				vNotify.removeClass('hover')
+				vNotifyShow.css({height:'38px'});
+				vNotifyShow.css({display:'none',opacity:0});
+				transIcon();
+			}
+
+			clearTimeout(controls.timeout)
+			clearTimeout(controls.timeoutMouseLeave)
+			controls.status = false;
+
+			// Verificar se os elementos ainda estão na página
+			var elemNotify = vNotify.find('.voteVideo ~ p,.voteSub ~ p,.adsVideo ~ p,voteVideoQuality ~ p')
+			if (elemNotify.length) {
+				// Transição para fechar o notify
+				elemNotify
+					.velocity('fadeOut',{
+						duration:150,
+						queue:false,
+						complete:transNotifyShow
+					})
+			} else {
+				transNotifyShow();
+			}
+
+			// Iniciar a fila se caso existir
+			this.startQueueNotify();
+		}
+
+		// Função para iniciar a fila do notify
+		this.startQueueNotify = function() {
+			var controls = this.controlsNotify()
+			,   that     = this;
+
+			// Caso esteja na fila, já chama
+			if (controls.queue.length) {
+				setTimeout(function(){
+					that.notify(controls.queue[0]);
+					controls.queue.splice(0,1);
+				},3000)
+			}
+		}
+
+		// Função do mouseenter do notify
+		this.mouseEnterNotify = function() {
+			var vPlayer = $('#'+player.id)
+			,   vNotify = vPlayer.find('.vNotifyPlayer')
+			,   controls = this.controlsNotify()
+			,   iconNotify = vNotify.find('.notifyIcon.changeAudio')
+			,   elemNotify = vNotify.find('.voteVideo ~ p,.voteSub ~ p,.adsVideo ~ p,.voteVideoQuality ~ p')
+
+			if (!elemNotify.length) return;
+
+			clearTimeout(controls.timeout)
+			if (elemNotify.is(':visible')) {
+				clearTimeout(controls.timeoutMouseLeave)
+				return;
+			}
+
+			vNotify
+				.find('.vNotifyShow')
+				.velocity({height:'72px'},{duration:50,complete:function(){
+					vNotify.addClass('hover')
+					elemNotify
+						.velocity('fadeIn',{display:'block',duration:150,queue:false,complete:function(){
+							vNotify.addClass('hover')
+						}})
+				}})
+
+			iconNotify
+				iconNotify.velocity('fadeIn',{duration:300})
+		}
+
+		// Verificar no local storage a configuração de legenda
+		this.getOffSubByLocalStorage = function() {
+			var value = localStorage.getItem('subtitleOff')
+			if (value) value = parseInt(value);
+			return value ? true : false;
+		}
+
+		// Incluir no local storage a configuração de legenda
+		this.setOffSubByLocalStorage = function(value) {
+			if (value) {
+				localStorage.setItem('subtitleOff',value);
+			} else {
+				localStorage.removeItem('subtitleOff');
+			}
+		}
+
+		// Função do mouseleave do notify
+		this.mouseLeaveNotify = function(timeout) {
+			var vPlayer = $('#'+player.id)
+			,   vNotify = vPlayer.find('.vNotifyPlayer')
+			,   controls = this.controlsNotify()
+			,   iconNotify = vNotify.find('.notifyIcon.changeAudio')
+			,   transNotifyShow = function() {
+				vNotify
+					.removeClass('hover')
+					.find('.vNotifyShow')
+					.velocity({height:'39px'},{duration:50})
+			}
+
+			controls.timeoutMouseLeave = setTimeout(function() {
+				// Verificar se os elementos ainda estão na página
+				var elemNotify = vNotify.find('.voteVideo ~ p,.voteSub ~ p,.adsVideo ~ p,.voteVideoQuality ~ p')
+				if (elemNotify.length) {
+					// Transição para fechar o notify
+					elemNotify
+						.velocity('fadeOut',{
+							duration:150,
+							queue:false,
+							complete:transNotifyShow
+						})
+				} else {
+					transNotifyShow();
+				}
+
+				iconNotify
+					.velocity('fadeOut',{duration:150,complete:function(){
+							iconNotify.velocity('fadeIn',{duration:150})
+						}
+					})
+			},timeout ? timeout : 500)
+		}
+
+		// Função do click para o voto do video
+		this.notifyVoteVideo = function(elem) {
+			var $this = elem
+			,   that  = this
+			,   status = false;
+
+			if ($this.is(':first-child')) {
+				var html = '<p class=voteVideoQuality>Qual sua nota para a qualidade do v&iacute;deo?</p>'
+				+          '<p>'
+				+            '<span class="vico icon-estrela" data-value=1 data-msg=P&eacute;ssimo></span>'
+				+            '<span class="vico icon-estrela" data-value=2 data-msg=Ruim></span>'
+				+            '<span class="vico icon-estrela" data-value=3 data-msg=Boa></span>'
+				+            '<span class="vico icon-estrela" data-value=4 data-msg="Muito Boa"></span>'
+				+            '<span class="vico icon-estrela" data-value=5 data-msg=Excelente></span>'
+				+          '</p>'
+				+          '<div></div>';
+
+				var vNotifyShow = $this.closest('.vNotifyShow')
+				,   elemOld = vNotifyShow.find('.voteVideo ~ p, .voteVideo')
+
+				elemOld
+					.velocity('fadeOut',{duration:150,complete:function(){
+						elemOld.remove()
+						vNotifyShow.prepend(html)
+					}})
+
+			} else {
+				var objSong = this.getObjSong();
+				if (objSong.source.match(',')) {
+					objSong.source = objSong.source.replace(/[^,]+,/i,'')
+				} else {
+					objSong.source = '';
+				}
+				status = true;
+				that.mouseLeaveNotify(1);
+				$this.closest('.vNotifyShow').html('<p>Desculpe, vamos tentar um outro v&iacute;deo!</p>');
+
+				// Remover a notificação
+				setTimeout(function(){
+					if (status) player.core.loadAndPlay();
+					that.removeNotify();
+				},2000)
+			}
+
+			// Google Analytics
+			//analyticsEvents('vPlayer3 / Vote','isVideo',(status ? 'Yes' : 'No'));
+		}
+
+		// Função para o click do voto do subtitle
+		this.notifyVoteSub = function(elem) {
+			var $this = $(elem)
+			,   objSong = player.modules.getObjSong()
+			,   that  = this
+			,   value = $this.attr('data-value')
+			,   subConf = new player.subtitle.SubtitleArray();
+
+			$.getJSON('//app2.vagalume.com.br/ajax/subtitle-post.php',{
+				action: 'voteSubtitle',
+				pointerID: objSong.pointerID,
+				subtitleID: (typeof subConf.subtitle == "object" ? subConf.subtitle.subtitles[0].sID : ''),
+				videoID: (objSong.service == 'youtube' ? objSong.source : ''),
+				duration: objSong.duration,
+				voteValue: $this.attr('data-value')
+			});
+
+			that.mouseLeaveNotify(1);
+			$this.closest('.vNotifyShow').html('<p>Obrigado por votar!</p>');
+
+			// Google Analytics
+			//analyticsEvents('vPlayer3 / Vote','voteSubtitle',value);
+
+			// Remover a notificação
+			setTimeout(function(){
+				that.removeNotify();
+			},2000)
+		}
+
+		// Função para o click do voto da qualidade do video
+		this.notifyVoteVideoQuality = function(elem) {
+			var $this = $(elem)
+			,   objSong = player.modules.getObjSong()
+			,   that  = this
+			,   value = $this.attr('data-value')
+			,   subConf = new player.subtitle.SubtitleArray()
+			,   param =  {
+					bandID:objSong.bandID,
+					pointerID:objSong.pointerID,
+					partner:'youtube',
+					partnerID:objSong.source,
+					rate: value
+				};
+			localStorage.setItem(['videoQuality','song',objSong.pointerID,'youtube',objSong.source].join(':'), value);
+
+			// Mandar para o tv submit
+			$.get('/control/tv_submit.php',param);
+			that.mouseLeaveNotify(1);
+			$this.closest('.vNotifyShow').html('<p>Obrigado por votar!</p>');
+
+			// Google Analytics
+			//analyticsEvents('vPlayer3 / Vote','voteVideoQuality',value);
+
+			// Remover a notificação
+			setTimeout(function(){
+				that.removeNotify();
+			}, 2000)
+		}
+
+		// Função que controla o notify
+		this.notify = function(param) {
+			if (!param || (param && typeof param != "object")) return;
+
+			var vPlayer = $('#'+player.id)
+			,   vNotify = vPlayer.find('.vNotifyPlayer')
+			,   vTabs   = vPlayer.find('.vTabs')
+			,   controls = this.controlsNotify()
+			,   timeout = controls.timeout
+			,   timeoutMouseLeave =  controls.timeoutMouseLeave
+			,   notifyStorage   = this.localStorageWithExpiration().load('vPlayerDontAskNotify')
+			,   that    = this
+			,   genHTML = function() {
+				vNotify
+					.find('.notifyIcon')
+					.remove()
+					.end()
+					.prepend('<i class="vico notifyIcon'+(param.service ? ' changeAudio' : '')+'" data-icon=- '+(param.service ? 'data-service='+param.service : '')+'></i>')
+
+				return '<div class=vNotifyShow>'
+				+  param.html
+				+  '<span class="closeNotify vico" data-icon=x></span>';
+			}
+			, funcTimeout = function() {
+				if (param.notTime) return;
+
+				controls.timeout = setTimeout(function(){
+					// that.removeNotify();
+				},param.time ? param.time : 5000)
+			}
+			,  transIcon = function() {
+				vNotify
+					.find('.notifyIcon')
+					.css({display:'block',visibility:'visible',opacity:1});
+					transNotifyShow();
+			}
+			,  transNotifyShow = function() {
+				vNotify
+					.find('.vNotifyShow')
+					.css({display:'table',opacity:1})
+			}
+
+			// Verificação para saber se pode fazer notify
+			if (!param.service && notifyStorage && !param.force) return;
+
+			// Colocar na fila
+			if (!param.noQueue && (controls.status || vPlayer.hasClass('controlsFixed'))) {
+				controls.queue.push(param);
+				return;
+			}
+
+			// Bloqueia notificação no mobile
+			if (player.defaults.type == 'mobile') return;
+
+			// Inicia o notify e da append
+			controls.status = true;
+			vNotify.append(genHTML());
+
+			// Faz animação
+			transIcon();
+
+			vNotify.css('display','block')
+
+			// Inicia o timeout
+			funcTimeout();
+
+			// Eventos
+			vNotify
+				.off()
+				.on('click','.closeNotify',function(){
+					that.removeNotify()
+					// 21600 é 15 dias em minutos
+					if (!notifyStorage) that.localStorageWithExpiration().save('vPlayerDontAskNotify',1,21600);
+				})
+				.on('mouseenter', function(){
+					that.mouseEnterNotify();
+				})
+				.on('mouseleave', function(){
+					funcTimeout();
+					that.mouseLeaveNotify();
+				})
+				.on('click','.changeAudio',function(){
+					that.removeNotify();
+				})
+				.on('click','.voteVideo ~ p span',function(){
+					that.notifyVoteVideo($(this))
+				})
+				.on('mouseenter','.voteSub ~ p span,.voteVideoQuality ~ p span',function(){
+					var $this = $(this);
+
+					$this.addClass('hover')
+					$this.prevAll().addClass('hover')
+					$this.parent().find('~ div').text($this.attr('data-msg'))
+				})
+				.on('mouseleave','.voteSub ~ p span,.voteVideoQuality ~ p span',function(){
+					$(this).parent()
+						.find('.hover').removeClass('hover')
+						.end()
+						.find('~ div').text('')
+				})
+				.on('click','.voteSub ~ p span',function(){
+					that.notifyVoteSub($(this));
+				})
+				.on('click','.voteVideoQuality ~ p span',function(){
+					that.notifyVoteVideoQuality($(this));
+				})
+		}
+
+		// Função para guardar valor no localstorage com expire
+		this.localStorageWithExpiration = function() {
+			return {
+				save : function(key, value, expirationMin){
+					if (!window.localStorage) return false;
+					if (!expirationMin) expirationMin = 5; // Default: 5 min
+
+					var expirationMS = expirationMin * 60 * 1000
+					,   record = {value: (typeof value == "object" ? JSON.stringify(value) : value), timestamp: new Date().getTime() + expirationMS}
+					localStorage.setItem(key, JSON.stringify(record));
+					return value;
+				},
+				load : function(key){
+					if (!window.localStorage) return false;
+
+					var value = localStorage.getItem(key)
+					,   record = value ? JSON.parse(value) : false
+					,   ret    = false;
+					if (record) {
+						if (new Date().getTime() < record.timestamp) {
+							ret = JSON.parse(record.value);
+						} else {
+							localStorage.removeItem(key);
+						}
+					}
+					return ret;
+				}
+			}
+		}
+
+		// Preparar obj para fazer busca
+		this.prepareObjSearch = function(data,service) {
+			var ret = false
+			,   obj = {}
+			if (data && Object.keys(data).length) {
+				var objValid = new player.modules.objValidSourceAndCount()
+				,   content = data[objValid.count];
+				if (content) {
+					obj.service = service;
+					obj.url     = content.url;
+					obj.ext     = content.ext;
+					ret = obj;
+				}
+			}
+			return ret;
+		}
+
+		// Obter um source válido
+		this.getValidSource = function() {
+			var objValid = new player.modules.objValidSourceAndCount()
+			,   objSong  = player.modules.getObjSong()
+
+			// Limpar dados
+			if (objSong.service != objValid.service || objSong.pointerID != objValid.pointerID) {
+				objValid.clear();
+			}
+
+			if (objValid.arraySongs && objValid.arraySongs.length) {
+				var obj = player.modules.prepareObjSearch(objValid.arraySongs,objValid.service);
+				if (obj) {
+					player.modules.updateCurrentSongBySearch(obj);
+					objValid.count++;
+					// TOCAR MUSICA
+					player.core.loadAndPlay();
+				} else {
+					// TODO: Fazer errorHandler
+				}
+			} else {
+				player.core.initWorker({
+					'data'   : player.modules.getObjSong(),
+					'message': 'getValidSource',
+					'service': player.modules.getCurrentService()
+				})
+			}
+		}
+
+		// Singleton para pegar a proxima música via worker
+		this.objValidSourceAndCount = (function() {
+			var instance;
+			objValidSourceAndCount = function() {
+				if (instance) {
+					return instance;
+				}
+				instance = this;
+				this.count = 0;
+				this.service = '';
+				this.pointerID  = '';
+				this.arraySongs = [];
+				this.clear = function(){
+					this.count = 0;
+					this.arraySongs = []
+					this.service = '';
+					this.pointerID  = '';
+				}
+			};
+			return objValidSourceAndCount;
+
+		}());
+
+		// Objeto do redirect
+		this.objRedirect = (function() {
+			var instance;
+			objRedirect = function() {
+				if (instance) {
+					return instance;
+				}
+				instance = this;
+				this.timeout = 0;
+			};
+			return objRedirect;
+		}());
+
+		// Objeto de timeout do item da playlist
+		this.timeoutBalloon = (function() {
+			var instance;
+			timeoutBalloon = function() {
+				if (instance) {
+					return instance;
+				}
+				instance = this;
+				this.timeout = 0;
+				this.hover = false;
+			};
+			timeoutBalloon.prototype.clear = function(){
+				clearTimeout(this.timeout);
+				$(this.hover).removeClass('hover')
+			}
+
+			return timeoutBalloon;
+		}());
+
+		// Singleton para Worker
+		this.Workermap = (function() {
+			var instance;
+			Workermap = function() {
+				if (instance) {
+					return instance;
+				}
+				instance = this;
+				this.worker;
+			};
+			return Workermap;
+
+		}());
+
+		// Singleton para pegar a proxima música via worker
+		this.objValidSourceAndCount = (function() {
+			var instance;
+			objValidSourceAndCount = function() {
+				if (instance) {
+					return instance;
+				}
+				instance = this;
+				this.count = 0;
+				this.service = '';
+				this.pointerID  = '';
+				this.arraySongs = [];
+				this.clear = function(){
+					this.count = 0;
+					this.arraySongs = []
+					this.service = '';
+					this.pointerID  = '';
+				}
+			};
+			return objValidSourceAndCount;
+
+		}());
+
+		// Obter a lista de serviços
+		this.getListServices = function(){
+			return ['youtube'];
+		}
+
+		// Obter a configuração default
+		this.getConfDefaultService = function() {
+			return 'youtube';
+		}
+
+		// Mover notificações da tela
+		this.timeoutTransitionToPlayer = function(){
+			if(player.modules.timeoutTransitionToPlayer._instance){
+				return player.modules.timeoutTransitionToPlayer._instance
+			}
+
+			var that = this;
+			player.modules.timeoutTransitionToPlayer._instance = that;
+			var timeout = null
+			,   timeoutMouseMove = null
+			,   timeoutReset = null
+			,   vPlayer = player.target.find('.vPlayer')
+			that.resetTime = function(){
+				vPlayer.removeClass('hover')
+				that.status = false;
+				clearTimeout(timeout);
+				timeout = setTimeout(function(){
+					player.transition.effects['mouseOut'](function(){
+						timeout = false;
+						if (that.status) {
+							player.transition.effects['mouseIn']();
+						}
+					})
+				},2000);
+			}
+			that.setTime = function(){
+
+				vPlayer.addClass('hover')
+				that.status = true;
+				if (timeout) {
+					clearTimeout(timeout);
+					clearTimeout(timeoutReset);
+					timeoutReset = setTimeout(function(){
+						if (vPlayer.find('.play,.pause').is(':hidden')) {
+							player.transition.effects['mouseIn']();
+						}
+					},1000)
+				} else {
+					player.transition.effects['mouseIn']();
+				}
+			}
+			that.mousemove = function(){
+				if (!that.status) {
+					player.transition.effects['mouseInFull']();
+					that.status = true
+				}
+			}
+			that.status = false
+		}
+
+		// Função para criar o indexedDB
+		this.createIndexedDBvPlayer = function(e) {
+			var thisDB = e.target.result;
+			if(!thisDB.objectStoreNames.contains('vincSource')) {
+				var objectStore = thisDB.createObjectStore('vincSource',{keyPath:'pointerID'});
+			}
+		}
+
+		// Inserindo dados no indexedDB
+		this.insertSourceIndexedDB = function(obj){
+			var localDatabase = {};
+			localDatabase.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.msIndexedDB;
+			if (!localDatabase.indexedDB
+				|| !obj || (obj && typeof obj != "object" && !obj.pointerID)
+				|| !player.defaults.storeServiceChoice) {
+				return;
+			}
+
+			var openRequest = localDatabase.indexedDB.open('vPlayer',1)
+			openRequest.onupgradeneeded = this.createIndexedDBvPlayer
+			openRequest.onsuccess = function(e) {
+				var result = e.target.result;
+				var store   = result.transaction(['vincSource'],"readwrite").objectStore('vincSource')
+				store.put(obj);
+			}
+		}
+
+		// Buscando dados do indexedDB pelo pointerID
+		this.getSourceIndexedDByPointer = function(pointerID,callback){
+			var localDatabase = {};
+			localDatabase.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.msIndexedDB;
+			if (!localDatabase.indexedDB || !pointerID) callback(false);
+
+			var openRequest =  localDatabase.indexedDB.open('vPlayer',1);
+			openRequest.onupgradeneeded = this.createIndexedDBvPlayer
+			openRequest.onsuccess = function(e){
+				var result = e.target.result;
+				var store   = result.transaction(['vincSource'],"readwrite").objectStore('vincSource')
+				store
+					.get(pointerID)
+					.onsuccess = function(e) {
+						var result = e.target.result;
+						if (result) {
+							result.pointerID = pointerID;
+							callback(result);
+						} else {
+							callback(false);
+						}
+					}
+			}
+			openRequest.onerror = function (e) {
+				callback(false,e.target.error);
+			};
+		}
+
+		// Obter uma URL fake para o Worker
+		this.getURLForWorker = function(workerFunction) {
+			URL             = window.URL || window.webkitURL,
+			mainString      = workerFunction.toString(),
+			bodyString      = mainString.substring( mainString.indexOf("{")+1, mainString.lastIndexOf("}") ).replace(/return this;?\s*$/, '');
+			bb              = new Blob([bodyString],{type:'text/javascript'})
+			return URL.createObjectURL(bb)
+		}
+	}
+
+	// Declarando o core
+	this.modules = {Init: Init};
+});
+
+// Inicializando o WebWorker
+$(vgl.lib().vPlayer).run(function(){
+	var workerServices = function(player) {
+		var isWorker = (typeof window == "object" ? false : true)
+		,   that  = this;
+
+		var search = function(data) {
+			switch(data.service){
+				case 'youtube':
+					loadYoutube(data);
+				break;
+				case 'all':
+					// loadVagalume(data);
+					loadYoutube(data);
+				break;
+			}
+		}
+
+		var getValidSource = function(data) {
+			data.data.limit = 10;
+			search(data)
+		}
+
+		var subtitle = function(data) {
+			ajax(
+				data.url
+				,data.message
+				,resSubtitle
+			);
+		}
+
+		var resSubtitle = function(ret) {
+			postMessageForceOut({message:'getSubtitle',content:ret});
+		}
+
+		var loadYoutube = function(data, fallback) {
+			var obj = data.data
+			,   offsetToken = ''
+			,   limit = 50
+			if (obj.limit) limit = obj.limit;
+			obj.text = obj.textFull ? obj.textFull : (obj.band + ' ' + obj.title);
+			obj.text = obj.text.replace(/"/g,' ').replace(/\s+/g,' ').replace(/^\s|\s$/g,'').toLowerCase();
+			var urlYoutube = fallback ? 'https://proxy.vagalume.com.br/api/youtube-v3/search?' : 'https://www.googleapis.com/youtube/v3/search?';
+
+			var key = [
+				'maxResults=50',
+				'orderby=relevance',
+				'part=snippet',
+				'q='+encodeURIComponent(obj.text),
+				'type=video',
+				(fallback ? '' : 'key=AIzaSyDXEjWEWs4WAx3M37I9hbX1qAWBCgSZhG0')
+			].join('&');
+			ajax(
+				urlYoutube+key
+				,data.message
+				,function(resYT, msgtype) {
+					// FALLBACK PARA O NOSSO BACKEND
+					if (!resYT) {
+						if (fallback) {
+							resYoutube([], msgtype);
+						} else {
+							loadYoutube(data, true);
+						}
+					} else {
+						resYoutube(resYT, msgtype);
+					}
+				}
+				,'youtube'
+			);
+		}
+
+		var resYoutube = function(data,msgtype) {
+			var ret = []
+			if (data && data.items) {
+				for (var i = 0, ii = data.items.length; i < ii; i++) {
+					var item = data.items[i];
+					// Não incluir o letras/cifra e etc..
+					if (/cifra[^0-9a-z]*club|letras[^0-9a-z]*mus|studio[^0-9a-z]*sol/i.test(item.snippet.channelTitle + item.snippet.title)) continue;
+
+					ret.push({
+						'href': 'https://www.youtube.com/watch?v='+item.id.videoId,
+						'title': item.snippet.title,
+						'url': item.id.videoId,
+						'userName' : item.snippet.channelTitle,
+						'ext':'youtube',
+						'extra': item,
+						'pageToken': data.nextPageToken
+					});
+				};
+			}
+
+			msgFormater({
+				'data':ret,
+				'message':msgtype,
+				'service':'youtube'
+			});
+		}
+
+		// @param: url: Url do ajax
+		//         msgtype: tipo de mensagem
+		//         config: serviço,dir,refer
+		var ajax = function(url,msgtype,callback,service) {
+			var objError = {
+				'status' : 'error',
+				'message': msgtype
+			}
+			if (service) objError['service'] = service;
+
+			// Verificação para saber da requisição via worker
+			if (isWorker) {
+				var xmlhttp = new XMLHttpRequest();
+				xmlhttp.onreadystatechange = function() {
+					if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+						var data = JSON.parse(xmlhttp.responseText);
+						if(callback){
+							callback(data,msgtype);
+						}
+					} else if (xmlhttp.readyState == 4 && xmlhttp.status != 200) {
+						if (service == 'youtube') {
+							callback(false, msgtype);
+						} else {
+							postMessageForceOut(objError);
+						}
+					}
+				}
+				xmlhttp.open("GET", url, true);
+				xmlhttp.send();
+			} else {
+				if (window && window.XDomainRequest && !jQuery.oldInternetExplorerTransport) {
+					jQuery.ajaxTransport(function (s) {
+						if (s.crossDomain && s.async) {
+							if (s.timeout) {
+								s.xdrTimeout = s.timeout;
+								delete s.timeout;
+							}
+							var xdr;
+							return {
+								send: function (headers, completeCallback) {
+									function callback(status, statusText, responses, responseHeaders) {
+										xdr.onload = xdr.onerror = xdr.ontimeout = jQuery.noop;
+										xdr = null;
+										completeCallback(status, statusText, responses, responseHeaders);
+									}
+									xdr = new XDomainRequest();
+									// XDomainRequest only supports GET and POST:
+									if (s.type === 'DELETE') {
+										s.url = s.url + (/\?/.test(s.url) ? '&' : '?') +
+											'_method=DELETE';
+										s.type = 'POST';
+									} else if (s.type === 'PUT') {
+										s.url = s.url + (/\?/.test(s.url) ? '&' : '?') +
+											'_method=PUT';
+										s.type = 'POST';
+									}
+									xdr.open(s.type, s.url);
+									xdr.onload = function () {
+										callback(
+											200,
+											'OK',
+											{text: xdr.responseText},
+											'Content-Type: ' + xdr.contentType
+										);
+									};
+									xdr.onerror = function () {
+										callback(404, 'Not Found');
+									};
+									if (s.xdrTimeout) {
+										xdr.ontimeout = function () {
+											callback(0, 'timeout');
+										};
+										xdr.timeout = s.xdrTimeout;
+									}
+									xdr.send((s.hasContent && s.data) || null);
+								},
+								abort: function () {
+									if (xdr) {
+										xdr.onerror = jQuery.noop();
+										xdr.abort();
+									}
+								}
+							};
+						}
+					});
+					jQuery.oldInternetExplorerTransport = true
+				}
+				$.ajax({
+					type:'GET',
+					dataType:"json",
+					url: url,
+					success: function(data){
+						callback(data, msgtype);
+					},
+					error: function(e) {
+						postMessageForceOut(objError);
+					}
+				});
+			}
+		}
+
+		// @param: data: resposta ajax
+		//         msgtype: tipo de mensagem
+		//         service: servico que foi requisitado
+		var msgFormater = function(obj){
+			var postMsg = {
+				'content':obj.data,
+				'message':obj.message,
+				'service':obj.service,
+				'status':'ok'
+			}
+			postMessageForceOut(postMsg);
+		}
+
+		var onMessageCheck = function(data) {
+			switch(data.message){
+				case 'searchMore':
+					search(data);
+				break;
+				case 'search':
+					search(data);
+				break;
+				case 'getSubtitle':
+					subtitle(data);
+				break;
+				case 'getValidSource':
+					getValidSource(data);
+				break;
+			}
+		}
+
+		// Postmessage caso seja worker ou evento
+		var postMessageForceOut = function(postMsg){
+			if (isWorker) {
+				postMessage(postMsg);
+			} else {
+				$(that).trigger('onmessageWorker', [postMsg])
+			}
+		};
+
+		// onMessage do Worker
+		if (isWorker) {
+			onmessage = function(e) {
+				onMessageCheck(e.data);
+			}
+		}
+
+		// Função que simula o onmessage via CORE
+		this.postMessageForceIn = function(data){
+			onMessageCheck(data);
+		};
+
+		if (isWorker) {
+			// Polyfill do FormData Upload para WebWorkers.
+			(function() {
+				// Export variable to the global scope
+				(this == undefined ? self : this)['FormData'] = FormData;
+
+				var ___send$rw = XMLHttpRequest.prototype.send;
+				XMLHttpRequest.prototype['send'] = function(data) {
+					if (data instanceof FormData) {
+						if (!data.__endedMultipart) data.__append('--' + data.boundary + '--\r\n');
+						data.__endedMultipart = true;
+						this.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + data.boundary);
+						data = new Uint8Array(data.data);
+					}
+					// Invoke original XHR.send
+					return ___send$rw.call(this, data);
+				};
+
+				function FormData() {
+					// Force a Constructor
+					if (!(this instanceof FormData)) return new FormData();
+					// Generate a random boundary - This must be unique with respect to the form's contents.
+					this.boundary = '------RWWorkerFormDataBoundary' + Math.random().toString(36);
+					var internal_data = this.data = [];
+					/**
+					* Internal method.
+					* @param inp String | ArrayBuffer | Uint8Array  Input
+					*/
+					this.__append = function(inp) {
+						var i=0, len;
+						if (typeof inp === 'string') {
+							for (len=inp.length; i<len; i++)
+								internal_data.push(inp.charCodeAt(i) & 0xff);
+						} else if (inp && inp.byteLength) {/*If ArrayBuffer or typed array */
+							if (!('byteOffset' in inp))   /* If ArrayBuffer, wrap in view */
+								inp = new Uint8Array(inp);
+							for (len=inp.byteLength; i<len; i++)
+								internal_data.push(inp[i] & 0xff);
+						}
+					};
+				}
+				/**
+				* @param name     String                                  Key name
+				* @param value    String|Blob|File|Uint8Array|ArrayBuffer Value
+				* @param filename String                                  Optional File name (when value is not a string).
+				**/
+				FormData.prototype['append'] = function(name, value, filename) {
+					if (this.__endedMultipart) {
+						// Truncate the closing boundary
+						this.data.length -= this.boundary.length + 6;
+						this.__endedMultipart = false;
+					}
+					var valueType = Object.prototype.toString.call(value),
+						part = '--' + this.boundary + '\r\n' +
+							'Content-Disposition: form-data; name="' + name + '"';
+
+					if (/^\[object (?:Blob|File)(?:Constructor)?\]$/.test(valueType)) {
+						return this.append(
+							name,
+							new Uint8Array(new FileReaderSync().readAsArrayBuffer(value)),
+							filename || value.name
+						);
+					} else if (/^\[object (?:Uint8Array|ArrayBuffer)(?:Constructor)?\]$/.test(valueType)) {
+						part += '; filename="'+ (filename || 'blob').replace(/"/g,'%22') +'"\r\n';
+						part += 'Content-Type: application/octet-stream\r\n\r\n';
+						this.__append(part);
+						this.__append(value);
+						part = '\r\n';
+					} else {
+						part += '\r\n\r\n' + value + '\r\n';
+					}
+					this.__append(part);
+				};
+			})();
+		};
+
+		// Removido se for carregado com o worker
+		return this;
+	}
+
+	// Declarando o core
+	this.webworker = {workerServices: workerServices};
+});

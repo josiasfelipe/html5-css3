@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inserindo Áudio</title>
+</head>
+<body>
+    <h1>Reproduzindo Áudio</h1>
+    <p>Podemos inserir áudio em nossos sites atravéz da tag <strong><big>&lt;audio&gt;</big></strong> em HTML. Há duas maneiras de se fazer isso, observe o código fonte desta página para perceber a diferença entre elas:</p>
+    <ol>
+        <li>Primeiro tipo:</li>
+            <audio src="midia/lobe-mini-vandals.mp3" controls></audio>
+        <li>Segundo tipo:</li>
+            <audio preload="metadata" controls loop>
+                <source src="midia/lobe-mini-vandals.mp3" type="audio/mpeg">
+                <source src="midia/lobe-mini-vandals.ogg" type="audio/ogg">
+                <source src="midia/lobe-mini-vandals.wav" type="audio/wav">
+                <p>Infelizmente seu navegador não consegue reproduzir áudio. <br><a href="midia/lobe-mini-vandals.mp3">Clique aqui para fazer o download do arquivo MP3.</a></p>
+            </audio>
+            
+    </ol>
+</body>
+</html>
