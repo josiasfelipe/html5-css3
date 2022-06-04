@@ -25,6 +25,11 @@
         }
 
         .destaque {
+            background-color: rgb(112, 112, 112);
+            color: white;
+        }
+
+        tfoot {
             background-color: rgb(216, 216, 216);
         }
     </style>
@@ -46,31 +51,31 @@
         <caption>População dos primeiros 4 Estados brasileiros</caption>
         <thead class="destaque">
             <tr>
-                <th>Estado</th>
-                <th>População</th>
+                <th scope="col">Estado</th> <!-- SCOPE= Se o título refere-se aos dados da linha ou da coluna (col= coluna; row= linha)-->
+                <th scope="col">População</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <th>São Paulo</th>
+                <td>São Paulo</td>
                 <td class="número">41 262 199</td>
             </tr>
             <tr>
-                <th>Minas Gerais</th>
+                <td>Minas Gerais</td>
                 <td class="número">19 597 330</td>
             </tr>
             <tr>
-                <th>Rio de Janeiro</th>
+                <td>Rio de Janeiro</td>
                 <td class="número">15 989 929</td>
             </tr>
             <tr>
-                <th>Bahia</th>
+                <td>Bahia</td>
                 <td class="número">14 016 906</td>
             </tr>
         </tbody>
-        <tfoot class="destaque">
+        <tfoot>
             <tr>
-                <th>Total</th>
+                <th scope="row">Total</th> <!-- escopo em linha "scope row", porque os dados do total estão ao lado, na mesma linha -->
                 <td class="número">90.866.364</td>
             </tr>
         </tfoot>
