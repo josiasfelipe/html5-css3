@@ -20,6 +20,20 @@
             padding: 6px;
         }
 
+        caption {
+            background-color: lightgrey;
+            font-weight: bold;
+            padding: 5px;
+        }
+
+        tbody > tr:nth-child(odd) { /* "odd= ímpar" ou aplica 2n-1 para pular de 2 em 2 começando com o elemento ímpar */
+            background-color: white;
+        }
+
+        tbody > tr:nth-child(even) { /* "even= par" ou aplica 2n para pular de 2 em 2 começando com o elemento par */
+            background-color: lightgray;
+        }
+
         .número {
             text-align: right;
         }
@@ -30,7 +44,8 @@
         }
 
         tfoot {
-            background-color: rgb(216, 216, 216);
+            background-color: rgb(0, 0, 99, 0.651);
+            color: white;
         }
     </style>
 </head>
@@ -48,7 +63,7 @@
                 TR, TD, TH
     -->
     <table>
-        <caption>População dos primeiros 4 Estados brasileiros</caption>
+        <caption>População dos Estados brasileiros</caption>
         <thead class="destaque">
             <tr>
                 <th scope="col">Estado</th> <!-- SCOPE= Se o título refere-se aos dados da linha ou da coluna (col= coluna; row= linha)-->
@@ -168,7 +183,7 @@
         <tfoot>
             <tr>
                 <th scope="row">Total</th> <!-- escopo em linha "scope row", porque os dados do total estão ao lado, na mesma linha -->
-                <td class="número">90.866.364</td>
+                <td class="número">210 147 125</td>
             </tr>
         </tfoot>
     </table>
