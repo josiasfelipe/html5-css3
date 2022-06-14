@@ -14,6 +14,12 @@
             border-collapse: collapse;
         }
 
+        .especial {
+            background-color: rgb(141, 140, 140);
+            color: white;
+            text-align: center;
+        }
+
         th, td {
             border: 1px solid black;
             padding: 5px;
@@ -23,27 +29,66 @@
 <body>
     <caption>Notas dos alunos</caption>
     <table>
-        <thead>
+        <thead class="especial">
             <tr>
-                <td>1</td>
-                <td>2</td>
-                <td>3</td>
+                <th rowspan="2">Áreas</th>
+                <th rowspan="2">Disciplinas</th>
+                <th colspan="2">Notas</th>
+                <th rowspan="2">Média</th>
+            </tr>
+            <tr>
+                <td>Nota 1</td>
+                <td>Nota 2</td>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>4</td>
-                <td>5</td>
-                <td>6</td>
+                <th rowspan="4">Exatas</th>
+                <td>Matemática</td>
+                <td>0.0</td>
+                <td>0.0</td>
+                <td>0.0</td>
+            </tr>
+            <tr>
+                <td>Física</td>
+                <td>0.0</td>
+                <td>0.0</td>
+                <td>0.0</td>
+            </tr>
+            <tr>
+                <td>Química</td>
+                <td>0.0</td>
+                <td>0.0</td>
+                <td>0.0</td>
+            </tr>
+            <tr>
+                <td>Biologia</td>
+                <td>0.0</td>
+                <td>0.0</td>
+                <td>0.0</td>
+            </tr>
+            <tr class="especial">
+                <th colspan="4"> Média de Exatas</th>
+                <td style="text-align: left;">0.0</td>
+            </tr>
+            <tr>
+                <th rowspan="2">Humanas</th>
+                <td>História</td>
+                <td>0.0</td>
+                <td>0.0</td>
+                <td>0.0</td>
+            </tr>
+            <tr>
+                <td>Geografia</td>
+                <td>0.0</td>
+                <td>0.0</td>
+                <td>0.0</td>
+            </tr>
+            <tr class="especial">
+                <th colspan="4"> Média de Humanas</th>
+                <td style="text-align: left;">0.0</td>
             </tr>
         </tbody>
-        <tfoot>
-            <tr>
-                <td>7</td>
-                <td>8</td>
-                <td>9</td>
-            </tr>
-        </tfoot>
     </table>
 </body>
 </html>
