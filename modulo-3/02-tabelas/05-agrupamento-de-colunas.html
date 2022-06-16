@@ -18,6 +18,14 @@
             border: 1px solid black;
             padding: 5px;
         }
+
+        col.cnome {
+            background-color: chartreuse;
+        }
+
+        col.grupo {
+            background-color: yellow;
+        }
     </style>
 </head>
 <body>
@@ -28,7 +36,9 @@
             Para fazer destacamento de coluna basta inserir a Tag <colgroup> e inserir a quantidade de colunas entre esta Tag, como exemplificado abaixo.
         -->
         <colgroup>
-
+            <col class="cnome">
+            <col class="grupo" span="2">
+            <col class="profissão">
         </colgroup>
         <caption style="text-align: center;">Cadastro</caption>
         <thead>
