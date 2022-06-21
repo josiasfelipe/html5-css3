@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iframes internos</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        iframe {
+            width: 96vw; height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Iframes Internos</h1>
+    <p>Podemos abrir diferentes páginas dentro de uma única usando o iframe, como podemos perceber no exemplo abaixo:</p>
+    <h2>Clique nos links abaixo para abrir a página referida no iframe</h2>
+    <ul>
+        <a href="paginas-secundarias/pag01.html" target="quadro">
+            <li>Página 1</li>
+        </a>
+        <a href="paginas-secundarias/pag02.html" target="quadro">
+            <li>Página 2</li>
+        </a>
+        <a href="paginas-secundarias/pag03.html" target="quadro">
+            <li>Página 3</li>
+        </a>
+    </ul>
+    <iframe src="" frameborder="0" name="quadro"></iframe>
+</body>
+</html>
