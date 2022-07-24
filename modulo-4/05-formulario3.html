@@ -23,6 +23,11 @@
                 <label for="iemail">Email: </label>
                 <input type="email" name="email" id="iemail">
             </p>
+            <p>
+                Sexo: 
+                <input type="radio" name="sexo" id="mas" value="M"><label for="mas"> Masculino</label>
+                <input type="radio" name="sexo" id="fem" value="F"><label for="fem"> Feminino</label>
+            </p>
         </fieldset>
         <fieldset>
             <legend>Dados Escolares</legend>
@@ -45,6 +50,13 @@
             <p>
                 <input type="submit" value="Enviar">
                 <input type="reset" value="Limpar">
+            </p>
+            <p>
+                Matérias favoritas: <br>
+                <input type="checkbox" name="mat" id="imat"><label for="imat"> Matemática</label><br>
+                <input type="checkbox" name="por" id="ipor"><label for="ipor"> Português</label><br>
+                <input type="checkbox" name="cie" id="icie"><label for="icie"> Ciências</label><br>
+                <input type="checkbox" name="his" id="ihis"><label for="ihis"> História</label><br>
             </p>
         </fieldset>
     </form>
