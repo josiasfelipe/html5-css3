@@ -7,8 +7,9 @@
     <title>Meu site</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
     <link rel="stylesheet" href="estilos/style.css">
+    <link rel="stylesheet" href="estilos/media-queries.css">
 </head>
-<body>
+<body onresize="mudouTamanho()">
     <header>
         <h1>Meu Site</h1>
         <span id="burger" class="material-symbols-outlined" onclick="clickMenu()">menu</span>
@@ -31,6 +32,14 @@
         </article>
     </main>
     <script>
+        function mudouTamanho() {
+            if (window.innerWidth >= 768){
+                opções.style.display = 'block'
+            } else {
+                opções.style.display = 'none'
+            }
+        }
+
         function clickMenu() {
             if (opções.style.display == 'block') {
                 opções.style.display = 'none'
